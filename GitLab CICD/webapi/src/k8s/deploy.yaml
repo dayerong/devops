@@ -1,0 +1,136 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: webapi
+    component: webapi
+    environment: dev
+  name: webapi-dev
+  namespace: infra
+spec:
+  ports:
+  - name: http
+    port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: webapi
+    component: webapi
+    environment: dev
+    tier: backend
+  sessionAffinity: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kubernetes.io/change-cause: image updated to <BUILD_TAG>
+  labels:
+    app: webapi
+    component: webapi
+    environment: dev
+    tier: backend
+  name: webapi-dev
+  namespace: infra
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: webapi
+      component: webapi
+      environment: dev
+      tier: backend
+  strategy:
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 0%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: webapi
+        component: webapi
+        environment: dev
+        tier: backend
+    spec:
+      containers:
+      - env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: branch
+          value: develop
+        image: hub.test.com/infra-app/webapi-dev:<BUILD_TAG>
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+            path: /healthz/liveness
+            port: 8000
+          initialDelaySeconds: 130
+          timeoutSeconds: 10
+        name: webapi-pod
+        readinessProbe:
+          httpGet:
+            path: /healthz/readiness
+            port: 8000
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+        resources:
+          limits:
+            cpu: 800m
+            memory: 1024Mi
+          requests:
+            cpu: 200m
+            memory: 512Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: tz-config
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - hostPath:
+          path: /etc/localtime
+        name: tz-config
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  labels:
+    app: webapi
+    environment: dev
+  name: webapi-dev
+  namespace: infra
+spec:
+  rules:
+  - host: webapi.test.cn
+    http:
+      paths:
+      - backend:
+          service:
+            name: webapi-dev
+            port:
+              number: 8000
+        path: /
+        pathType: ImplementationSpecific
+status:
+  loadBalancer:
+    ingress:
+    - ip: 10.0.3.60

@@ -1,0 +1,40 @@
+variables:
+  CI_REGISTRY_PATH: infra-app
+  CI_REGISTRY_URL: hub.test.com
+
+stages:
+  - build
+  - deploy
+
+Build:
+  image: docker:stable
+  stage: build
+  tags:
+    - k8s-runner
+  script:
+    - echo "Running on branch $CI_COMMIT_BRANCH"
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
+        env="prod"
+      elif [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
+        env="dev"
+      fi
+    - mkdir -p ~/.docker && echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$REGISTRY_AUTH\"}}}" > ~/.docker/config.json
+    - docker build -t ${CI_REGISTRY_URL}/${CI_REGISTRY_PATH}/${CI_PROJECT_NAME}-${env}:${CI_COMMIT_SHORT_SHA} ./src
+    - docker push ${CI_REGISTRY_URL}/${CI_REGISTRY_PATH}/${CI_PROJECT_NAME}-${env}:${CI_COMMIT_SHORT_SHA}
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - src/Dockerfile
+
+Deploy:
+  image: hub.test.com/infra-app/bitnami/kubectl:1.23.0
+  stage: deploy
+  tags:
+    - k8s-runner
+  script:
+    - mkdir -p ~/.kube
+    - echo ${k8s_sit_kubeconfig} | base64 -id > ~/.kube/config
+    - export KUBECONFIG=/.kube/config
+    - sed -i 's/<BUILD_TAG>/'${CI_COMMIT_SHORT_SHA}'/' ${CI_PROJECT_DIR}/src/k8s/deploy.yaml
+    - kubectl apply -f ${CI_PROJECT_DIR}/src/k8s/deploy.yaml

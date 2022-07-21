@@ -1,0 +1,25 @@
+@Library("jenkins-library") _
+
+def map = [:]
+
+// 消息通知人
+map.put("touser","8333")
+
+// harbor仓库地址
+map.put("registry_name","infra-app")
+map.put("project_name","wecom")
+map.put("registryUrl","hub.test.com")
+
+// 应用代码仓库地址
+map.put("app_git_url","git@git.test.com:devops/wecom.git")
+
+// Kubesphere变量
+map.put("DOCKER_CREDENTIAL_ID","hub-id")
+map.put("KUBECONFIG_CREDENTIAL_ID","kubeconfig")
+map.put("REGISTRY","hub.test.com")
+map.put("DOCKERHUB_NAMESPACE","infra")
+map.put("GITHUB_ACCOUNT","pushuser")
+map.put("SONAR_CREDENTIAL_ID","sonar-token")
+map.put("SONAR_SERVER_IP","http://172.16.10.71:32373")
+
+runPipeline("python", map)

@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+nameSuffix: -prod
+namespace: infra
+commonLabels:
+  environment: prod
+patchesStrategicMerge:
+  - replica_count.yaml
+  - ingress.yaml
+images:
+  - name: webapi
+    newName: hub.test.com/infra-app/webapi-prod
+    newTag: f597367
+resources:
+  - ../../base
+patches:
+  - path: deployment_patch.yaml
+    target:
+      group: apps
+      kind: Deployment
+      version: v1

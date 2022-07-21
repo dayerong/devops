@@ -1,0 +1,14 @@
+- op: replace
+  path: /metadata/annotations/kubernetes.io~1change-cause
+  value: image updated to 4dd9d96
+- op: replace
+  path: /metadata/labels/create_time
+  value: "20220708133237"
+- op: replace
+  path: /spec/template/metadata/labels/create_time
+  value: "20220708133237"
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: branch
+    value: develop

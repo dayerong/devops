@@ -1,0 +1,19 @@
+@Library('Jenkins-shared-library@main') _
+
+def map = [:]
+
+// 消息通知人
+map.put("touser","12345")
+
+// harbor仓库地址
+map.put("registry_name","infra-app")
+map.put("project_name","webapi")
+map.put("registryUrl","hub.test.com")
+
+// 应用代码仓库地址
+map.put("app_git_url","ssh://git@10.0.3.210:2224/devops/webapi.git")
+
+// pipeline仓库地址
+map.put("pipeline_git_url","ssh://git@10.0.3.210:2224/devops/argoproj.git")
+
+runPipeline("argocdPython", map)

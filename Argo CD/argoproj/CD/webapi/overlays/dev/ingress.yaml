@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapi
+spec:
+  rules:
+    - host: webapi.test.cn
+      http:
+        paths:
+          - backend:
+              service:
+                name: webapi
+                port:
+                  number: 8000
+            path: /
+            pathType: ImplementationSpecific
+status:
+  loadBalancer:
+    ingress:
+      - ip: 10.0.3.60

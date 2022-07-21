@@ -1,0 +1,194 @@
+pipeline {
+    agent any
+    environment {
+        registry_name = "infra-app"
+        project_name = "infra-job"
+        registryUrl= "hub.test.com"
+        app_dir = "/infra-job"
+        target_dev_host = "10.0.1.12"
+        target_prod_host = "10.0.1.13"
+        pipeline_project_name = "pipeline"
+        branch_name = "${env.BRANCH_NAME}"
+        dockerfile_path = "${WORKSPACE}/${pipeline_project_name}/${project_name}/${branch_name}"
+        app_workspace = "/var/jenkins_home/workspace/${project_name}/code/${env.BRANCH_NAME}"
+        pipeline_workspace = "/var/jenkins_home/workspace/${project_name}/${env.BRANCH_NAME}/${pipeline_project_name}"
+        docker_name = "infra-job"
+    }
+
+    stages {
+        stage('Prepare') {
+            steps {
+                echo "1. Prepare Stage"
+                echo "Delete Workspace: ${WORKSPACE}  Delete App Workspace: ${app_workspace}"
+                    deleteDir()
+                dir("${app_workspace}"){
+                    deleteDir()
+                }
+                script {
+                    dir("${app_workspace}"){
+                        checkout scm
+                        build_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+                        if (env.BRANCH_NAME == 'master') {
+                            image_name = "${registryUrl}/${registry_name}/${project_name}-prod:${build_tag}"
+                        } else if (env.BRANCH_NAME == 'develop'){
+                            image_name = "${registryUrl}/${registry_name}/${project_name}-dev:${build_tag}"
+                        }
+                     }
+                }
+            }
+         }
+
+        stage('Summary') {
+            steps {
+                echo "2. Print Summary Stage"
+                echo "Workspace: ${WORKSPACE}  App Workspace: ${app_workspace}  Build_id: ${BUILD_ID}  Branch_name: ${env.BRANCH_NAME}  Commit_id: ${build_tag}  "
+                echo "registryUrl: ${registryUrl}"
+                echo "Project Name: ${project_name}"
+                echo "Docker Image Name: ${image_name}"
+                echo "Dockerfile Path: ${dockerfile_path}"
+            }
+        }
+
+
+        stage('Build') {
+            steps {
+                dir("${app_workspace}"){
+                    echo "4. Build Docker Image Stage"
+                    echo "Copy ${dockerfile_path}/Dockerfile to ${app_workspace}"
+                    script {
+                        sh "cp ${dockerfile_path}/Dockerfile ./"
+                        customImage = docker.build("${image_name}","./",)
+                     }
+                 }
+            }
+        }
+
+        stage('Push') {
+            steps {
+                echo '4. Push Docker Image Stage'
+                script {
+	                customImage.push()
+	             }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo '5. Deploy Docker Environment Stage'
+                script {
+                if (env.BRANCH_NAME == 'master') {
+                    sshagent(credentials : ['ee87cc61-6780-4ee7-ac85-c69f0f523a15']) {
+                        def exitValue = sh(returnStatus: true, script: "ssh -o StrictHostKeyChecking=no devops@${target_prod_host} docker inspect -f '{{.Config.Image}}' ${docker_name} > /dev/null 2>&1")
+                        if (exitValue != 0) {
+                            sh "ssh -o StrictHostKeyChecking=no devops@${target_prod_host} docker run -d -v /data/app/logs/${project_name}:${app_dir}/app/logs -v /etc/localtime:/etc/localtime -e TZ=Asia/Shanghai --name ${docker_name} ${image_name} || true"
+                        } else if (exitValue == 0) {
+						    current_image_name = sh(returnStdout: true, script: "ssh -o StrictHostKeyChecking=no devops@${target_prod_host} docker inspect -f '{{.Config.Image}}' ${docker_name}").trim()
+						    echo "Deploy Target Host: ${target_prod_host}  Docker Image: ${current_image_name}"
+                            sh "ssh -o StrictHostKeyChecking=no devops@${target_prod_host} docker rm --force ${docker_name} || true"
+                            sh "ssh -o StrictHostKeyChecking=no devops@${target_prod_host} docker rmi ${current_image_name} || true"
+                            sh "ssh -o StrictHostKeyChecking=no devops@${target_prod_host} docker run -d -v /data/app/logs/${project_name}:${app_dir}/app/logs -v /etc/localtime:/etc/localtime -e TZ=Asia/Shanghai --name ${docker_name} ${image_name} || true"
+                        }
+                    }
+                 } else if (env.BRANCH_NAME == 'develop'){
+                        sshagent(credentials : ['ee87cc61-6780-4ee7-ac85-c69f0f523a15']) {
+                            def exitValue = sh(returnStatus: true, script: "ssh -o StrictHostKeyChecking=no devops@${target_dev_host} docker inspect -f '{{.Config.Image}}' ${docker_name} > /dev/null 2>&1")
+                            if (exitValue != 0) {
+                                sh "ssh -o StrictHostKeyChecking=no devops@${target_dev_host} docker run -d -v /data/app/logs/${project_name}:${app_dir}/app/logs -v /etc/localtime:/etc/localtime -e TZ=Asia/Shanghai --name ${docker_name} ${image_name} || true"
+                            } else if (exitValue == 0) {
+						        current_image_name = sh(returnStdout: true, script: "ssh -o StrictHostKeyChecking=no devops@${target_dev_host} docker inspect -f '{{.Config.Image}}' ${docker_name}").trim()
+						        echo "Deploy Target Host: ${target_dev_host}  Docker Image: ${current_image_name}"
+                                sh "ssh -o StrictHostKeyChecking=no devops@${target_dev_host} docker rm --force ${docker_name} || true"
+                                sh "ssh -o StrictHostKeyChecking=no devops@${target_dev_host} docker rmi ${current_image_name} || true"
+                                sh "ssh -o StrictHostKeyChecking=no devops@${target_dev_host} docker run -d -v /data/app/logs/${project_name}:${app_dir}/app/logs -v /etc/localtime:/etc/localtime -e TZ=Asia/Shanghai --name ${docker_name} ${image_name} || true"
+                            }
+                        }
+                    }
+                }
+            }
+         }
+
+        stage('Clean up') {
+            steps {
+                echo "7. Cleanup Data Stage"
+                echo "Delete Workspace: ${WORKSPACE}  Delete Locale Image: ${image_name}  Delete App Workspace: ${app_workspace} & ${pipeline_workspace}"
+                deleteDir()
+                dir("${pipeline_workspace}"){
+                    deleteDir()
+                }
+                script {
+                    sh "docker rmi ${image_name}"
+	             }
+            }
+        }
+    }
+
+    post {
+        success {
+            script {
+                dir("${app_workspace}"){
+                    sh '''
+                        #!/bin/bash
+                        SUBJECT="【"${JOB_NAME}"】发布信息 - 成功"
+                        GIT_COMMITTER_NAME=$(git log --name-only -n 1 |awk '/Author/{print $2}')
+                        GIT_COMMITTER_EMAIL=$(git log --name-only -n 1 |awk -F "<" '/Author/{print $2}' |awk -F ">" '{print $1}')
+                        COMMITTER_ID=$(git log --name-only -n 1 |awk '/commit/{print $2}')
+                        COMMITTER_DATE=$(date -d "`git log --name-only -n 1 |awk '/Date:/{print $2,$3,$4,$5,$6}'`" +'%Y-%m-%d %H:%M:%S')
+                        COMMITTER_FILE=$(git diff --name-only HEAD~ HEAD)
+                        TOUSER="1234"
+                        END_TIME=$(date "+%Y-%m-%d %H:%M:%S")
+                        CONTENT=">**发布详情**\n  \
+构建   ID：<font color=\"info\">${BUILD_DISPLAY_NAME}</font>\n \
+结束时间：<font color=\"info\">${END_TIME}</font>\n \
+开发人员：<font color=\"info\">${GIT_COMMITTER_NAME}</font>\n \
+邮      箱：<font color=\"info\">${GIT_COMMITTER_EMAIL}</font>\n \
+提交   ID：<font color=\"info\">${COMMITTER_ID:0:8}</font>\n \
+提交时间：<font color=\"info\">${COMMITTER_DATE}</font>\n \
+修改文件：\n \
+<font color=\"info\">${COMMITTER_FILE}</font>\n
+"
+
+                        #微信通知
+                        python /var/jenkins_home/tools/wechat.py -send "${TOUSER}" "${SUBJECT}" "${CONTENT}"
+                    '''
+                    deleteDir()
+                }
+            }
+        }
+
+        failure {
+            script {
+                dir("${app_workspace}"){
+                    sh '''
+                        #!/bin/bash
+                        SUBJECT="【"${JOB_NAME}"】发布信息 - 失败"
+                        GIT_COMMITTER_NAME=$(git log --name-only -n 1 |awk '/Author/{print $2}')
+                        GIT_COMMITTER_EMAIL=$(git log --name-only -n 1 |awk -F "<" '/Author/{print $2}' |awk -F ">" '{print $1}')
+                        COMMITTER_ID=$(git log --name-only -n 1 |awk '/commit/{print $2}')
+                        COMMITTER_DATE=$(date -d "`git log --name-only -n 1 |awk '/Date:/{print $2,$3,$4,$5,$6}'`" +'%Y-%m-%d %H:%M:%S')
+                        COMMITTER_FILE=$(git diff --name-only HEAD~ HEAD)
+                        TOUSER="1234"
+                        END_TIME=$(date "+%Y-%m-%d %H:%M:%S")
+                        CONTENT=">**发布详情**\n  \
+构建   ID：<font color=\"info\">${BUILD_DISPLAY_NAME}</font>\n \
+结束时间：<font color=\"info\">${END_TIME}</font>\n \
+开发人员：<font color=\"info\">${GIT_COMMITTER_NAME}</font>\n \
+邮      箱：<font color=\"info\">${GIT_COMMITTER_EMAIL}</font>\n \
+提交   ID：<font color=\"info\">${COMMITTER_ID:0:8}</font>\n \
+提交时间：<font color=\"info\">${COMMITTER_DATE}</font>\n \
+修改文件：\n \
+<font color=\"info\">${COMMITTER_FILE}</font>\n \
+错误日志：[内网点击](http://10.0.1.11:8081/${project_name}/job/${BRANCH_NAME}/${BUILD_DISPLAY_NAME:1}/consoleText)
+"
+
+                        #微信通知
+                        python /var/jenkins_home/tools/wechat.py -send "${TOUSER}" "${SUBJECT}" "${CONTENT}"
+
+                        #生成错误日志
+                        mkdir -p /var/jenkins_home/html/${project_name}/job/${BRANCH_NAME}/${BUILD_DISPLAY_NAME:1}
+                        grep -v "ha:" /var/jenkins_home/jobs/${project_name}/branches/${BRANCH_NAME}/builds/${BUILD_DISPLAY_NAME:1}/log > /var/jenkins_home/html/${project_name}/job/${BRANCH_NAME}/${BUILD_DISPLAY_NAME:1}/consoleText
+                '''
+                deleteDir()
+            }
+        }
+     }
+    }
+}
