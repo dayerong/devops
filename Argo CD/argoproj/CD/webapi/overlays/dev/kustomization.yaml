@@ -5,16 +5,16 @@ commonLabels:
   environment: dev
 namespace: infra
 resources:
-- ../../base
+  - ../../base
 patchesStrategicMerge:
-- ingress.yaml
+  - ingress.yaml
 images:
-- name: webapi
-  newName: hub.test.com/infra-app/webapi-dev
-  newTag: 4dd9d96
+  - name: webapi
+    newName: hub.test.com/infra-app/webapi-dev
+    newTag: 4dd9d96
 patches:
-- path: deployment_patch.yaml
-  target:
-    group: apps
-    kind: Deployment
-    version: v1
+  - path: deployment_patch.yaml
+    target:
+      group: apps
+      kind: Deployment
+      version: v1

@@ -1,10 +1,12 @@
 variables:
   CI_REGISTRY_PATH: infra-app
   CI_REGISTRY_URL: hub.test.com
+  TO_USER: 8333
 
 stages:
   - build
   - deploy
+  - notify
 
 Build:
   image: docker:stable
@@ -37,4 +39,48 @@ Deploy:
     - echo ${k8s_sit_kubeconfig} | base64 -id > ~/.kube/config
     - export KUBECONFIG=/.kube/config
     - sed -i 's/<BUILD_TAG>/'${CI_COMMIT_SHORT_SHA}'/' ${CI_PROJECT_DIR}/src/k8s/deploy.yaml
-    - kubectl apply -f ${CI_PROJECT_DIR}/src/k8s/deploy.yaml
+    - kubectl apply -f ${CI_PROJECT_DIR}/src/k8s/deploy.yamla
+
+NotifySuccessWeChat:
+  image: hub.test.com/infra-app/python:2.7.18
+  stage: notify
+  tags:
+    - k8s-runner
+  script:
+    - COMMITTER_USER=${CI_COMMIT_AUTHOR%<*}
+    - COMMITTER_EMAIL=$(echo ${CI_COMMIT_AUTHOR} | sed -r 's/.*<(.*)>.*/\1/')
+    - COMMITTER_DATE=$(TZ=Asia/Shanghai date -d ${CI_COMMIT_TIMESTAMP} "+%Y-%m-%d %H:%M:%S")
+    - SUBJECT="【${CI_PROJECT_NAME}/${CI_COMMIT_BRANCH}】发布信息 - 成功"
+    - |
+      CONTENT="
+      >**发布详情**
+      提交人员：<font color=\"info\">${COMMITTER_USER}</font>
+      邮      箱：<font color=\"info\">${COMMITTER_EMAIL}</font>
+      提交描述：<font color=\"info\">${CI_COMMIT_TITLE}</font>
+      提交   ID：<font color=\"info\">${CI_COMMIT_SHORT_SHA}</font>
+      提交时间：<font color=\"info\">${COMMITTER_DATE}</font>
+      "
+    - python ${CI_PROJECT_DIR}/src/k8s/wechat.py -send "${TO_USER}" "${SUBJECT}" "${CONTENT}"
+  when: on_success
+
+NotifyFailWeChat:
+  image: hub.test.com/infra-app/python:2.7.18
+  stage: notify
+  tags:
+    - k8s-runner
+  script:
+    - COMMITTER_USER=${CI_COMMIT_AUTHOR%<*}
+    - COMMITTER_EMAIL=$(echo ${CI_COMMIT_AUTHOR} | sed -r 's/.*<(.*)>.*/\1/')
+    - COMMITTER_DATE=$(TZ=Asia/Shanghai date -d ${CI_COMMIT_TIMESTAMP} "+%Y-%m-%d %H:%M:%S")
+    - SUBJECT="【${CI_PROJECT_NAME}/${CI_COMMIT_BRANCH}】发布信息 - 失败"
+    - |
+      CONTENT="
+      >**发布详情**
+      提交人员：<font color=\"info\">${COMMITTER_USER}</font>
+      邮      箱：<font color=\"info\">${COMMITTER_EMAIL}</font>
+      提交描述：<font color=\"info\">${CI_COMMIT_TITLE}</font>
+      提交   ID：<font color=\"info\">${CI_COMMIT_SHORT_SHA}</font>
+      提交时间：<font color=\"info\">${COMMITTER_DATE}</font>
+      "
+    - python ${CI_PROJECT_DIR}/src/k8s/wechat.py -send "${TO_USER}" "${SUBJECT}" "${CONTENT}"
+  when: on_failure
