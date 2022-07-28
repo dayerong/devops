@@ -3,6 +3,16 @@ variables:
   CI_REGISTRY_URL: hub.test.com
   TO_USER: 8333
 
+workflow:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+      variables:
+        env: prod
+    - if: $CI_COMMIT_BRANCH == "develop"
+      variables:
+        env: dev
+    - when: always
+
 stages:
   - build
   - deploy
@@ -16,12 +26,6 @@ Build:
   script:
     - echo "CI_START_TIME=${CI_JOB_STARTED_AT}" > build.env
     - echo "Running on branch $CI_COMMIT_BRANCH"
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
-        env="prod"
-      elif [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
-        env="dev"
-      fi
     - mkdir -p ~/.docker && echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$REGISTRY_AUTH\"}}}" > ~/.docker/config.json
     - docker build -t ${CI_REGISTRY_URL}/${CI_REGISTRY_PATH}/${CI_PROJECT_NAME}-${env}:${CI_COMMIT_SHORT_SHA} ./src
     - docker push ${CI_REGISTRY_URL}/${CI_REGISTRY_PATH}/${CI_PROJECT_NAME}-${env}:${CI_COMMIT_SHORT_SHA}
