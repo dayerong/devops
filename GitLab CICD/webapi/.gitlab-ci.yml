@@ -14,6 +14,7 @@ Build:
   tags:
     - k8s-runner
   script:
+    - echo "CI_START_TIME=${CI_JOB_STARTED_AT}" > build.env
     - echo "Running on branch $CI_COMMIT_BRANCH"
     - |
       if [[ "$CI_COMMIT_BRANCH" == "main" ]]; then
@@ -28,6 +29,9 @@ Build:
     - if: $CI_COMMIT_BRANCH
       exists:
         - src/Dockerfile
+  artifacts:
+    reports:
+      dotenv: build.env
 
 Deploy:
   image: hub.test.com/infra-app/bitnami/kubectl:1.23.0
@@ -39,7 +43,7 @@ Deploy:
     - echo ${k8s_sit_kubeconfig} | base64 -id > ~/.kube/config
     - export KUBECONFIG=/.kube/config
     - sed -i 's/<BUILD_TAG>/'${CI_COMMIT_SHORT_SHA}'/' ${CI_PROJECT_DIR}/src/k8s/deploy.yaml
-    - kubectl apply -f ${CI_PROJECT_DIR}/src/k8s/deploy.yamla
+    - kubectl apply -f ${CI_PROJECT_DIR}/src/k8s/deploy.yaml
 
 NotifySuccessWeChat:
   image: hub.test.com/infra-app/python:2.7.18
@@ -47,6 +51,8 @@ NotifySuccessWeChat:
   tags:
     - k8s-runner
   script:
+    - START_TIME=$(TZ=Asia/Shanghai date -d ${CI_START_TIME} "+%Y-%m-%d %H:%M:%S")
+    - END_TIME=$(TZ=Asia/Shanghai date -d @`date +%s` "+%Y-%m-%d %H:%M:%S")
     - COMMITTER_USER=${CI_COMMIT_AUTHOR%<*}
     - COMMITTER_EMAIL=$(echo ${CI_COMMIT_AUTHOR} | sed -r 's/.*<(.*)>.*/\1/')
     - COMMITTER_DATE=$(TZ=Asia/Shanghai date -d ${CI_COMMIT_TIMESTAMP} "+%Y-%m-%d %H:%M:%S")
@@ -56,12 +62,16 @@ NotifySuccessWeChat:
       >**发布详情**
       提交人员：<font color=\"info\">${COMMITTER_USER}</font>
       邮      箱：<font color=\"info\">${COMMITTER_EMAIL}</font>
+      开始时间：<font color=\"info\">${START_TIME}</font>
+      结束时间：<font color=\"info\">${END_TIME}</font>
       提交描述：<font color=\"info\">${CI_COMMIT_TITLE}</font>
       提交   ID：<font color=\"info\">${CI_COMMIT_SHORT_SHA}</font>
       提交时间：<font color=\"info\">${COMMITTER_DATE}</font>
       "
     - python ${CI_PROJECT_DIR}/src/k8s/wechat.py -send "${TO_USER}" "${SUBJECT}" "${CONTENT}"
   when: on_success
+  dependencies:
+    - Build
 
 NotifyFailWeChat:
   image: hub.test.com/infra-app/python:2.7.18
@@ -69,6 +79,8 @@ NotifyFailWeChat:
   tags:
     - k8s-runner
   script:
+    - START_TIME=$(TZ=Asia/Shanghai date -d ${CI_START_TIME} "+%Y-%m-%d %H:%M:%S")
+    - END_TIME=$(TZ=Asia/Shanghai date -d @`date +%s` "+%Y-%m-%d %H:%M:%S")
     - COMMITTER_USER=${CI_COMMIT_AUTHOR%<*}
     - COMMITTER_EMAIL=$(echo ${CI_COMMIT_AUTHOR} | sed -r 's/.*<(.*)>.*/\1/')
     - COMMITTER_DATE=$(TZ=Asia/Shanghai date -d ${CI_COMMIT_TIMESTAMP} "+%Y-%m-%d %H:%M:%S")
@@ -78,9 +90,13 @@ NotifyFailWeChat:
       >**发布详情**
       提交人员：<font color=\"info\">${COMMITTER_USER}</font>
       邮      箱：<font color=\"info\">${COMMITTER_EMAIL}</font>
+      开始时间：<font color=\"info\">${START_TIME}</font>
+      结束时间：<font color=\"info\">${END_TIME}</font>
       提交描述：<font color=\"info\">${CI_COMMIT_TITLE}</font>
       提交   ID：<font color=\"info\">${CI_COMMIT_SHORT_SHA}</font>
       提交时间：<font color=\"info\">${COMMITTER_DATE}</font>
       "
     - python ${CI_PROJECT_DIR}/src/k8s/wechat.py -send "${TO_USER}" "${SUBJECT}" "${CONTENT}"
   when: on_failure
+  dependencies:
+    - Build
