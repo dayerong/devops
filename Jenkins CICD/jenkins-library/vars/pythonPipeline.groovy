@@ -161,6 +161,27 @@ def call(Map map) {
                     }
                 }
             }
+
+            stage('Check Deployments') {
+                steps {
+                    echo "7.Check Deployments Status"
+                    script {
+                        container ('maven') {
+                            withCredentials([file(credentialsId: 'kubeconfig-k8s', variable: 'KUBECONFIG')]) {
+                                sh "mkdir -p ~/.kube && cp ${KUBECONFIG} ~/.kube/config"
+                                sh """
+                                    if ! kubectl rollout status deployment ${project_name} -n infra --watch --timeout=5m; then
+                                        echo "发布失败，开始回滚！"
+                                        kubectl rollout undo deployment ${project_name} -n infra
+                                        // kubectl rollout status deployment ${project_name} -n infra
+                                        exit 1
+                                    fi
+                                    """
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         post {
