@@ -45,9 +45,14 @@ Deploy:
   script:
     - mkdir -p ~/.kube
     - echo ${k8s_sit_kubeconfig} | base64 -id > ~/.kube/config
-    - export KUBECONFIG=/.kube/config
     - sed -i 's/<BUILD_TAG>/'${CI_COMMIT_SHORT_SHA}'/' ${CI_PROJECT_DIR}/src/k8s/deploy.yaml
     - kubectl apply -f ${CI_PROJECT_DIR}/src/k8s/deploy.yaml
+    - >
+      if ! kubectl rollout status deployment webapi-dev -n infra --watch --timeout=50s; then
+          echo "部署失败，开始回滚！"
+          kubectl rollout undo deployment webapi-dev -n asia-platform
+          exit 1
+      fi
 
 NotifySuccessWeChat:
   image: hub.test.com/infra-app/python:2.7.18
