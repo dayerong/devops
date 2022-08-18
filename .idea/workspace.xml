@@ -16,8 +16,17 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GitLab CICD/webapi/.gitlab-ci.yml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="491">
-              <caret line="54" column="8" selection-start-line="54" selection-start-column="8" selection-end-line="54" selection-end-column="8" />
+            <state relative-caret-position="423">
+              <caret line="64" column="67" lean-forward="true" selection-start-line="64" selection-start-column="67" selection-end-line="64" selection-end-column="67" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Jenkins CICD/jenkins-library/vars/pythonPipeline.groovy">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="409">
+              <caret line="184" column="9" selection-start-line="184" selection-start-column="9" selection-end-line="184" selection-end-column="9" />
             </state>
           </provider>
         </entry>
@@ -99,14 +108,16 @@
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/Argo CD/argoproj/CD/webapi/overlays/dev/kustomization.yaml" />
         <option value="$PROJECT_DIR$/GitLab CICD/webapi/src/k8s/wechat.py" />
+        <option value="$PROJECT_DIR$/Jenkins CICD/jenkins-library/vars/pythonPipeline.groovy" />
         <option value="$PROJECT_DIR$/GitLab CICD/webapi/.gitlab-ci.yml" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-7" />
-    <option name="width" value="974" />
-    <option name="height" value="1057" />
+    <option name="x" value="659" />
+    <option name="y" value="64" />
+    <option name="width" value="1218" />
+    <option name="height" value="1066" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -114,7 +125,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -148,15 +158,32 @@
             <path>
               <item name="devops" type="b2602c69:ProjectViewProjectNode" />
               <item name="devops" type="462c0819:PsiDirectoryNode" />
-              <item name="GitLab CICD" type="462c0819:PsiDirectoryNode" />
-              <item name="webapi" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="k8s" type="462c0819:PsiDirectoryNode" />
+              <item name="Jenkins CICD" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="devops" type="b2602c69:ProjectViewProjectNode" />
+              <item name="devops" type="462c0819:PsiDirectoryNode" />
+              <item name="Jenkins CICD" type="462c0819:PsiDirectoryNode" />
+              <item name="jenkins-library" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="devops" type="b2602c69:ProjectViewProjectNode" />
+              <item name="devops" type="462c0819:PsiDirectoryNode" />
+              <item name="Jenkins CICD" type="462c0819:PsiDirectoryNode" />
+              <item name="jenkins-library" type="462c0819:PsiDirectoryNode" />
+              <item name="vars" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="devops" type="b2602c69:ProjectViewProjectNode" />
+              <item name="devops" type="462c0819:PsiDirectoryNode" />
+              <item name="Jenkins CICD" type="462c0819:PsiDirectoryNode" />
+              <item name="k8s-pipeline" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -198,7 +225,8 @@
       <updated>1658387296948</updated>
       <workItem from="1658387298979" duration="4904000" />
       <workItem from="1658908143828" duration="3045000" />
-      <workItem from="1660635945803" duration="14000" />
+      <workItem from="1660635945803" duration="1307000" />
+      <workItem from="1660810299869" duration="650000" />
     </task>
     <task id="LOCAL-00001" summary="忽略文件">
       <created>1658393325180</created>
@@ -221,17 +249,31 @@
       <option name="project" value="LOCAL" />
       <updated>1658989809394</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="增加k8s部署的状态检查">
+      <created>1660636003990</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1660636003990</updated>
+    </task>
+    <task id="LOCAL-00005" summary="增加k8s部署的状态检查">
+      <created>1660636442412</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1660636442412</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="7963000" />
+    <option name="totallyTimeSpent" value="9906000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1705757" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17217484" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -245,7 +287,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" />
       <window_info anchor="bottom" id="Database Changes" order="9" />
       <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="11" visible="true" weight="0.32939914" />
+      <window_info anchor="bottom" id="Terminal" order="11" visible="true" weight="0.32939914" />
       <window_info anchor="bottom" id="Python Console" order="12" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -262,7 +304,8 @@
     <MESSAGE value="忽略文件" />
     <MESSAGE value="增加CICD启动与结束时间" />
     <MESSAGE value="设置流水线规则" />
-    <option name="LAST_COMMIT_MESSAGE" value="设置流水线规则" />
+    <MESSAGE value="增加k8s部署的状态检查" />
+    <option name="LAST_COMMIT_MESSAGE" value="增加k8s部署的状态检查" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/Argo CD/argocd-hook/src/app/model/__init__.py">
@@ -401,13 +444,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Jenkins CICD/jenkins-library/vars/pythonPipeline.groovy">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2888">
-          <caret line="167" column="24" selection-start-line="167" selection-start-column="24" selection-end-line="167" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Jenkins CICD/jenkins-library/vars/argocdPythonPipeline.groovy">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="551">
@@ -521,13 +557,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/GitLab CICD/webapi/.gitlab-ci.yml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="491">
-          <caret line="54" column="8" selection-start-line="54" selection-start-column="8" selection-end-line="54" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="19">
@@ -539,6 +568,20 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2147">
           <caret line="118" column="31" selection-start-line="118" selection-start-column="31" selection-end-line="118" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Jenkins CICD/jenkins-library/vars/pythonPipeline.groovy">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="409">
+          <caret line="184" column="9" selection-start-line="184" selection-start-column="9" selection-end-line="184" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GitLab CICD/webapi/.gitlab-ci.yml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="423">
+          <caret line="64" column="67" lean-forward="true" selection-start-line="64" selection-start-column="67" selection-end-line="64" selection-end-column="67" />
         </state>
       </provider>
     </entry>

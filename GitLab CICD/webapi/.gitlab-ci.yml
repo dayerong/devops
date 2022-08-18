@@ -54,6 +54,16 @@ Deploy:
           exit 1
       fi
 
+# Check:
+#   image: hub.cuanon.com/infra-app/kubedog:0.9.6
+#   stage: check
+#   tags:
+#     - k8s-runner
+#   script:
+#     - mkdir -p ~/.kube
+#     - echo ${k8s_sit_kubeconfig} | base64 -id > ~/.kube/config
+#     - kubedog rollout track -n infra deployment webapi-dev -t 300
+
 NotifySuccessWeChat:
   image: hub.test.com/infra-app/python:2.7.18
   stage: notify
