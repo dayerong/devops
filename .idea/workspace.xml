@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="b2bfd276-93a5-4067-9ab7-49fe59163178" name="Default Changelist" comment="">
+    <list default="true" id="b2bfd276-93a5-4067-9ab7-49fe59163178" name="Default Changelist" comment="增加k8s部署的状态kubedog检查">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GitLab CICD/webapi/.gitlab-ci.yml" beforeDir="false" afterPath="$PROJECT_DIR$/GitLab CICD/webapi/.gitlab-ci.yml" afterDir="false" />
     </list>
@@ -16,8 +16,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GitLab CICD/webapi/.gitlab-ci.yml">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="423">
-              <caret line="64" column="67" lean-forward="true" selection-start-line="64" selection-start-column="67" selection-end-line="64" selection-end-column="67" />
+            <state relative-caret-position="442">
+              <caret line="59" column="9" lean-forward="true" selection-start-line="59" selection-start-column="9" selection-end-line="59" selection-end-column="9" />
             </state>
           </provider>
         </entry>
@@ -226,7 +226,7 @@
       <workItem from="1658387298979" duration="4904000" />
       <workItem from="1658908143828" duration="3045000" />
       <workItem from="1660635945803" duration="1307000" />
-      <workItem from="1660810299869" duration="650000" />
+      <workItem from="1660810299869" duration="728000" />
     </task>
     <task id="LOCAL-00001" summary="忽略文件">
       <created>1658393325180</created>
@@ -263,11 +263,18 @@
       <option name="project" value="LOCAL" />
       <updated>1660636442412</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="增加k8s部署的状态kubedog检查">
+      <created>1660811052461</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1660811052461</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="9906000" />
+    <option name="totallyTimeSpent" value="9984000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
@@ -305,7 +312,8 @@
     <MESSAGE value="增加CICD启动与结束时间" />
     <MESSAGE value="设置流水线规则" />
     <MESSAGE value="增加k8s部署的状态检查" />
-    <option name="LAST_COMMIT_MESSAGE" value="增加k8s部署的状态检查" />
+    <MESSAGE value="增加k8s部署的状态kubedog检查" />
+    <option name="LAST_COMMIT_MESSAGE" value="增加k8s部署的状态kubedog检查" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/Argo CD/argocd-hook/src/app/model/__init__.py">
@@ -580,8 +588,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/GitLab CICD/webapi/.gitlab-ci.yml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="423">
-          <caret line="64" column="67" lean-forward="true" selection-start-line="64" selection-start-column="67" selection-end-line="64" selection-end-column="67" />
+        <state relative-caret-position="442">
+          <caret line="59" column="9" lean-forward="true" selection-start-line="59" selection-start-column="9" selection-end-line="59" selection-end-column="9" />
         </state>
       </provider>
     </entry>

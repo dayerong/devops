@@ -54,7 +54,7 @@ Deploy:
           exit 1
       fi
 
-# Check:
+# CheckStatus:
 #   image: hub.cuanon.com/infra-app/kubedog:0.9.6
 #   stage: check
 #   tags:
