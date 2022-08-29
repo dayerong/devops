@@ -204,17 +204,28 @@ def call(Map map) {
 
             failure {
                 script {
-                    def full_job_name = env.JOB_NAME.tokenize('/') as String[]
-                    def job_name = full_job_name[1] + "/" + full_job_name[2]
-                    def alert = new org.devops.wechat()
+                    withCredentials([usernamePassword(passwordVariable : 'JENKINS_PASSWORD' ,usernameVariable : 'JENKINS_USER' ,credentialsId : "jenkins-id" ,)]) {
+                        def full_job_name = env.JOB_NAME.tokenize('/') as String[]
+                        def job_name = full_job_name[1] + "/" + full_job_name[2]
+                        def alert = new org.devops.wechat()
 
-                    dir("${app_workspace}") {
-                        def config = [
-                            subject: "【${job_name}】发布信息 - 失败",
-                            touser: "${touser}",
-                            start_time: "${start_time}"
-                        ]
-                        alert.SendMessage(config)
+                        // 生成错误日志
+                        sh '''
+                            #!/bin/bash
+                            jenkins_url="http://ks-jenkins.kubesphere-devops-system.svc.cluster.local"
+                            build_path=$(echo ${BUILD_URL} | grep / | cut -d/ -f4-)
+                            build_url=${jenkins_url}/${build_path}
+                            mkdir -p /tmp/build_html/${build_path}
+                            curl -u ${JENKINS_USER}:${JENKINS_PASSWORD} ${build_url}consoleText -o /tmp/build_html/${build_path}consoleText -s
+                        '''
+                        dir("${app_workspace}") {
+                            def config = [
+                                subject: "【${job_name}】发布信息 - 失败",
+                                touser: "${touser}",
+                                start_time: "${start_time}"
+                            ]
+                            alert.SendFailMessage(config)
+                        }
                     }
                 }
             }
